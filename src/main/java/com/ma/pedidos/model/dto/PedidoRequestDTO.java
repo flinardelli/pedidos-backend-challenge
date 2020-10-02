@@ -1,10 +1,9 @@
 package com.ma.pedidos.model.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.*;
 import java.util.List;
 
 @Data
@@ -13,7 +12,11 @@ import java.util.List;
 @NoArgsConstructor
 public class PedidoRequestDTO {
     private String idPedidoCabecera;
+
+    @NotNull(message = "La dirección no puede estar nula")
     private String direccion;
+
+    @Email(message = "El email ingresado no es correcto. Revise que el formato e intentelo nuevamente.")
     private String email;
     private String telefono;
     private String horario;
@@ -21,5 +24,7 @@ public class PedidoRequestDTO {
     private Double montoTotal;
     private Boolean isAplicoDescuento;
     private String estado;
+
+    @Valid
     private List<PedidoDetalleRequestDTO> detalle;
 }

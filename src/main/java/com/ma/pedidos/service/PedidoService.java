@@ -15,8 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Service
 public class PedidoService {
@@ -61,9 +64,7 @@ public class PedidoService {
         PedidoCabeceraEntity pedidoCabeceraResponse = pedidoCabeceraRepository.save(pedidoCabeceraEntity);
         List<PedidoDetalleEntity> pedidoDetalleResponse = (List<PedidoDetalleEntity>) pedidoDetalleRepository.saveAll(pedidoDetalleEntities);
 
-        PedidoResponseDTO response = this.mappingPedidos(pedidoCabeceraResponse, pedidoDetalleResponse);
-
-        return response;
+        return this.mappingPedidos(pedidoCabeceraResponse, pedidoDetalleResponse);
     }
 
     private PedidoResponseDTO mappingPedidos(PedidoCabeceraEntity pedidoCabeceraEntity, List<PedidoDetalleEntity> pedidoDetalleEntity){
@@ -81,7 +82,7 @@ public class PedidoService {
             pedidoDetalleResponseDTOList.add(pedidoResponseDTO);
         });
 
-        PedidoResponseDTO pedidoDTO = PedidoResponseDTO.builder()
+        return PedidoResponseDTO.builder()
                 .idPedidoCabecera(pedidoCabeceraEntity.getIdPedidoCabecera())
                 .direccion(pedidoCabeceraEntity.getDireccion())
                 .email(pedidoCabeceraEntity.getEmail())
@@ -93,18 +94,27 @@ public class PedidoService {
                 .detalle(pedidoDetalleResponseDTOList)
                 .build();
 
-        return pedidoDTO;
-
     }
 
-    /*public PedidoResponseDTO getProductosByFecha(Date fecha) {
-        List<PedidoCabeceraEntity> pedidoCabeceraEntity = pedidoCabeceraRepository.findByFechaAltaOrderByFechaAltaDesc(fecha);
+    public List<PedidoResponseDTO> getProductosByFecha(Date fecha) {
+        List<PedidoCabeceraEntity> pedidoCabeceraEntities = pedidoCabeceraRepository.findByFechaAltaOrderByFechaAltaDesc(fecha);
+        AtomicReference<List<PedidoDetalleEntity>> pedidoDetalleEntities = new AtomicReference<>();
+        Optional.ofNullable(pedidoCabeceraEntities).ifPresent(pedidos -> pedidos.forEach(pedido -> {
+            List<PedidoDetalleEntity> pedidoDetalleEntity = pedidoDetalleRepository.findAllByPedidoCabeceraEntity(pedido);
+            pedidoDetalleEntities.set(pedidoDetalleEntity);
+        }));
 
-        Optional.ofNullable(pedidoCabeceraEntity).ifPresent( pedidos -> {
-            pedidos.forEach(pedido -> {
-                List<PedidoDetalleEntity> pedidoDetalleEntity = pedidoDetalleRepository.findAllByIdPedidoCabecera(pedido.getIdPedidoCabecera());
-                pedidoDetalleEntity
+        List<PedidoResponseDTO> pedidoResponseDTOList = new ArrayList<>();
+        Optional.ofNullable(pedidoCabeceraEntities).ifPresent(pedidos -> {
+            pedidos.forEach( pedido -> {
+                List<PedidoDetalleEntity> pedidoDetalles = pedidoDetalleEntities.get().stream().filter(m -> pedido.getIdPedidoCabecera().equals(m.getPedidoCabeceraEntity().getIdPedidoCabecera())).collect(Collectors.toList());
+
+                PedidoResponseDTO responseDTO = this.mappingPedidos(pedido,pedidoDetalles);
+
+                pedidoResponseDTOList.add(responseDTO);
             });
         });
-    }*/
+
+        return pedidoResponseDTOList;
+    }
 }

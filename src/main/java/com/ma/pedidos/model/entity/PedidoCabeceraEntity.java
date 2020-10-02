@@ -1,16 +1,10 @@
 package com.ma.pedidos.model.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.Date;
 
 @Data
 @Builder
@@ -28,7 +22,8 @@ public class PedidoCabeceraEntity {
     private String email;
     private String telefono;
     private String horario;
-    private String fechaAlta;
+    @Temporal(TemporalType.DATE)
+    private Date fechaAlta;
     private double montoTotal;
 
     @Column(name = "aplico_descuento")

@@ -14,8 +14,12 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 public class ProductoService {
 
+    private final ProductoRepository productoRepository;
+
     @Autowired
-    private ProductoRepository productoRepository;
+    public ProductoService(ProductoRepository productoRepository) {
+        this.productoRepository = productoRepository;
+    }
 
     public ProductoDTO getProductoById(String idProducto) {
         ProductoEntity productoEntity = productoRepository.findById(idProducto).orElseThrow(ProductoNotFoundException::new);
@@ -55,6 +59,12 @@ public class ProductoService {
         AtomicReference<ProductoDTO> productoEntityAtomic = new AtomicReference<>();
 
         Optional.of(productoEntity).ifPresent(prod -> {
+            prod.setIdProducto(producto.getIdProducto());
+            prod.setDescripcionCorta(producto.getDescripcionCorta());
+            prod.setDescripcionLarga(producto.getDescripcionLarga());
+            prod.setNombre(producto.getNombre());
+            prod.setPrecioUnitario(producto.getPrecioUnitario());
+
             ProductoEntity productoResponse = productoRepository.save(prod);
 
             productoEntityAtomic.set(ProductoDTO.builder().nombre(productoResponse.getNombre())

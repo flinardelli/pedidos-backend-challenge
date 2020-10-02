@@ -16,9 +16,6 @@ import java.util.UUID;
 @Table(name = "productos")
 @Entity
 public class ProductoEntity {
-
-    private static final long serialVersionUID = 1L;
-
     @Id
     @GeneratedValue(generator="system-uuid")
     @GenericGenerator(name="system-uuid", strategy = "uuid")

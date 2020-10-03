@@ -110,7 +110,6 @@ public class PedidoService {
 
     public List<PedidoResponseDTO> getProductosByFecha(Date fecha) {
         String fechaString = new SimpleDateFormat("yyyy-MM-dd").format(fecha);
-        Iterable<PedidoDetalleEntity> p = pedidoDetalleRepository.findAll();
 
         List<PedidoCabeceraEntity> pedidoCabeceraEntities = pedidoCabeceraRepository.findByFechaAltaOrderByFechaAltaDesc(fechaString);
         List<List<PedidoDetalleEntity>> pedidoDetalleEntities = new ArrayList<>();

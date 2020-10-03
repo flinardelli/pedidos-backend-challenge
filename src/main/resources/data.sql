@@ -1,4 +1,7 @@
 INSERT INTO PRODUCTOS(id, nombre, descripcion_corta, descripcion_larga, precio_unitario)
+VALUES ('89efb206-2aa6-4e21-8a23-5765e3de1t02', 'Roquefort', 'Pizza de roquefort', 'Mozzarella, salsa y roquefort', 400.00);
+
+INSERT INTO PRODUCTOS(id, nombre, descripcion_corta, descripcion_larga, precio_unitario)
 VALUES ('89efb206-2aa6-4e21-8a23-5765e3de1f31', 'Jamón crudo y rúcula', 'Pizza de jamón crudo y rúcula', 'Mozzarella, jamón crudo y rúcula', 560.00);
 
 INSERT INTO PRODUCTOS(id, nombre, descripcion_corta, descripcion_larga, precio_unitario)

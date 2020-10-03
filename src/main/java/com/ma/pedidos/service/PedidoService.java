@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -47,6 +48,7 @@ public class PedidoService {
         String fechaString = new SimpleDateFormat("yyyy-MM-dd").format(fecha);
 
         AtomicReference<Double> montoTotal = new AtomicReference<>(0.0);
+        AtomicInteger contadorDetalles = new AtomicInteger(0);
         pedido.getDetalle().forEach(detalle ->{
             ProductoEntity productoEntity = productoRepository.findById(detalle.getProducto()).orElseThrow(ProductoNotFoundException::new);
 
@@ -57,7 +59,12 @@ public class PedidoService {
 
             pedidoDetalleEntities.add(pedidoDetalleEntity);
             montoTotal.updateAndGet(v -> v + productoEntity.getPrecioUnitario());
+            contadorDetalles.getAndIncrement();
         });
+
+        if(contadorDetalles.get() >= 3) {
+            montoTotal.set(montoTotal.get() - ((montoTotal.get() * 30) / 100));
+        }
 
         PedidoCabeceraEntity pedidoCabeceraEntity = PedidoCabeceraEntity.builder()
                 .direccion(pedido.getDireccion())

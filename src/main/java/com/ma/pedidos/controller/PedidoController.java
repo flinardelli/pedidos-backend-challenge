@@ -30,7 +30,7 @@ public class PedidoController {
 
     @GetMapping
     @ResponseBody
-    public ResponseEntity<List<PedidoResponseDTO>> getProductosByFecha(@RequestParam("fecha")  @DateTimeFormat(pattern = "yyyy-MM-dd") Date fecha){
+    public ResponseEntity<List<PedidoResponseDTO>> getProductosByFecha(@RequestParam("fecha") @DateTimeFormat(pattern="yyyy-MM-dd") Date fecha){
         List<PedidoResponseDTO> pedidoDTO = pedidoService.getProductosByFecha(fecha);
         return ResponseEntity.ok().body(pedidoDTO);
     }

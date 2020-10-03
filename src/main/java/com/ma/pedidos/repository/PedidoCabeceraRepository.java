@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface PedidoCabeceraRepository extends CrudRepository<PedidoCabeceraEntity, String> {
 
-    List<PedidoCabeceraEntity> findByFechaAltaOrderByFechaAltaDesc(Date fecha);
+    List<PedidoCabeceraEntity> findByFechaAltaOrderByFechaAltaDesc(String fecha);
 }

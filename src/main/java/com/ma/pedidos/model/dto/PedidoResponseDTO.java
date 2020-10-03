@@ -19,9 +19,8 @@ public class PedidoResponseDTO {
     private String email;
     private String telefono;
     private String horario;
-    private Date fechaAlta;
+    private String fechaAlta;
     private Double montoTotal;
-    private Boolean isAplicoDescuento;
     private String estado;
     private List<PedidoDetalleResponseDTO> detalle;
 }

@@ -14,10 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -38,11 +41,15 @@ public class PedidoService {
     }
 
     @Transactional(rollbackFor = {ProductoNotFoundException.class, NullPointerException.class})
-    public PedidoResponseDTO createPedido(PedidoRequestDTO pedido) {
+    public PedidoResponseDTO createPedido(PedidoRequestDTO pedido){
         List<PedidoDetalleEntity> pedidoDetalleEntities = new ArrayList<>();
+        Date fecha = new Date();
+        String fechaString = new SimpleDateFormat("yyyy-MM-dd").format(fecha);
+
         AtomicReference<Double> montoTotal = new AtomicReference<>(0.0);
-        pedido.getDetalle().forEach( detalle ->{
+        pedido.getDetalle().forEach(detalle ->{
             ProductoEntity productoEntity = productoRepository.findById(detalle.getProducto()).orElseThrow(ProductoNotFoundException::new);
+
             PedidoDetalleEntity pedidoDetalleEntity = new PedidoDetalleEntity();
             pedidoDetalleEntity.setCantidad(detalle.getCantidad());
             pedidoDetalleEntity.setPrecioUnitario(productoEntity.getPrecioUnitario());
@@ -55,13 +62,18 @@ public class PedidoService {
         PedidoCabeceraEntity pedidoCabeceraEntity = PedidoCabeceraEntity.builder()
                 .direccion(pedido.getDireccion())
                 .email(pedido.getEmail())
-                .estado(pedido.getEstado())
+                .estado("PENDIENTE")
                 .telefono(pedido.getTelefono())
                 .horario(pedido.getHorario())
+                .isAplicoDescuento(false)
+                .fechaAlta(fechaString)
                 .montoTotal(montoTotal.get())
                 .build();
 
         PedidoCabeceraEntity pedidoCabeceraResponse = pedidoCabeceraRepository.save(pedidoCabeceraEntity);
+
+        pedidoDetalleEntities.stream().forEach(detalle -> detalle.setPedidoCabeceraEntity(pedidoCabeceraResponse));
+
         List<PedidoDetalleEntity> pedidoDetalleResponse = (List<PedidoDetalleEntity>) pedidoDetalleRepository.saveAll(pedidoDetalleEntities);
 
         return this.mappingPedidos(pedidoCabeceraResponse, pedidoDetalleResponse);
@@ -97,24 +109,26 @@ public class PedidoService {
     }
 
     public List<PedidoResponseDTO> getProductosByFecha(Date fecha) {
-        List<PedidoCabeceraEntity> pedidoCabeceraEntities = pedidoCabeceraRepository.findByFechaAltaOrderByFechaAltaDesc(fecha);
-        AtomicReference<List<PedidoDetalleEntity>> pedidoDetalleEntities = new AtomicReference<>();
+        String fechaString = new SimpleDateFormat("yyyy-MM-dd").format(fecha);
+        Iterable<PedidoDetalleEntity> p = pedidoDetalleRepository.findAll();
+
+        List<PedidoCabeceraEntity> pedidoCabeceraEntities = pedidoCabeceraRepository.findByFechaAltaOrderByFechaAltaDesc(fechaString);
+        List<List<PedidoDetalleEntity>> pedidoDetalleEntities = new ArrayList<>();
         Optional.ofNullable(pedidoCabeceraEntities).ifPresent(pedidos -> pedidos.forEach(pedido -> {
-            List<PedidoDetalleEntity> pedidoDetalleEntity = pedidoDetalleRepository.findAllByPedidoCabeceraEntity(pedido);
-            pedidoDetalleEntities.set(pedidoDetalleEntity);
+            List<PedidoDetalleEntity> pedidoDetalles = pedidoDetalleRepository.findByPedidoCabeceraEntity(pedido);
+            pedidoDetalleEntities.add(pedidoDetalles);
         }));
 
-        List<PedidoResponseDTO> pedidoResponseDTOList = new ArrayList<>();
-        Optional.ofNullable(pedidoCabeceraEntities).ifPresent(pedidos -> {
-            pedidos.forEach( pedido -> {
-                List<PedidoDetalleEntity> pedidoDetalles = pedidoDetalleEntities.get().stream().filter(m -> pedido.getIdPedidoCabecera().equals(m.getPedidoCabeceraEntity().getIdPedidoCabecera())).collect(Collectors.toList());
+        Set<PedidoResponseDTO> pedidoResponseDTOList = new HashSet<>();
+        pedidoDetalleEntities.stream().forEach(list -> {
 
-                PedidoResponseDTO responseDTO = this.mappingPedidos(pedido,pedidoDetalles);
-
+            for (PedidoDetalleEntity pedido : list){
+                PedidoCabeceraEntity pedidoCabeceraEntity= pedido.getPedidoCabeceraEntity();
+                PedidoResponseDTO responseDTO = this.mappingPedidos(pedidoCabeceraEntity,list);
                 pedidoResponseDTOList.add(responseDTO);
-            });
+            }
         });
 
-        return pedidoResponseDTOList;
+        return new ArrayList<>(pedidoResponseDTOList);
     }
 }

@@ -23,7 +23,7 @@ public class PedidoDetalleEntity {
     private Integer cantidad;
     private double precioUnitario;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idPedidoCabecera")
     private PedidoCabeceraEntity pedidoCabeceraEntity;
 

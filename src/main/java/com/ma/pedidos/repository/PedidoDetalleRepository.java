@@ -9,5 +9,5 @@ import java.util.List;
 
 public interface PedidoDetalleRepository extends CrudRepository<PedidoDetalleEntity, String> {
 
-    List<PedidoDetalleEntity> findAllByPedidoCabeceraEntity(PedidoCabeceraEntity pedidoCabeceraEntity);
+    List<PedidoDetalleEntity> findByPedidoCabeceraEntity(PedidoCabeceraEntity pedidoCabeceraEntity);
 }
